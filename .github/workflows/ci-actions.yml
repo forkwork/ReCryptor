@@ -28,14 +28,14 @@ jobs:
           install-mode: goinstall
       - name: Check shadowing
         run: |
-         go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
-         go vet -vettool=$(which shadow) ./... 2>&1 | awk -f .etc/action.awk
+          go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+          go vet -vettool=$(which shadow) ./... 2>&1 | awk -f .etc/action.awk
         shell: bash
       - name: Verifying Code
         run: |
-         go generate -v ./...
-         test -z "$(git status --porcelain)"
-         go vet ./...
+          go generate -v ./...
+          test -z "$(git status --porcelain)"
+          go vet ./...
         shell: bash
       - name: Building
         run: go build -v ./...
@@ -122,7 +122,6 @@ jobs:
       actions: read
       contents: read
       security-events: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -130,10 +129,20 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+      - name: Install C/C++ Build Essentials
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: go
+          languages: go, cpp
+      - name: Build C/C++ Project
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+          make
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
